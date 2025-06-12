@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#define N 500
+#define N 200
+#define Temperatura 1000
 //#define DEBUG
 
 typedef struct{
   int spins[N][N];
   float energy;
+  float spin_sum;
   float J;
 }Ising;
 
@@ -21,6 +23,13 @@ void create_spin_lattice(Ising *model, int proportion){
         model->spins[i][j] = -1;
     }
   }
+}
+
+void calculate_spin_sum(Ising *model){
+ model->spin_sum = 0;
+ for(int i=0; i<N; i++)
+  for(int j=0; j<N; j++)
+    model->spin_sum+=model->spins[i][j];
 }
 
 void calculate_hamiltonian(Ising *model){
@@ -43,7 +52,7 @@ void calculate_hamiltonian(Ising *model){
 
 void isingStep(Ising *X_t, float Temp){
     float dE=0, dEy=0, dEx=0;
-
+ 
     //Rotate random spin
     int i=(rand() % N);
     int j=(rand() % N);
@@ -69,7 +78,7 @@ void isingStep(Ising *X_t, float Temp){
       dEy+= X_t->spins[i][j+1]*current_Y_spin;
       dEx+= X_t->spins[i][j+1]*X_t->spins[i][j];      
     }
-    dE = X_t->J*(dEy - dEx);
+    dE = -1*X_t->J*(dEy - dEx);
     
     //Metropolis step
     if(dE<0){
@@ -78,17 +87,19 @@ void isingStep(Ising *X_t, float Temp){
       #endif
       X_t->spins[i][j] = current_Y_spin;
       X_t->energy += dE;
+      X_t->spin_sum += 2*current_Y_spin;
     }else{
-      float U = ((rand() % 100) + 1)*0.01;
+      float U = ((rand() % 1000) + 1)*0.001;
       float boltz_dist = -dE/Temp;
       float probability = exp(boltz_dist);
-      float alpha = boltz_dist>1?1:probability;
-      if(U<=alpha){
+      float alpha = fmin(1,probability);
+      if(U<alpha){
         #ifdef DEBUG
         printf("dE>0 e U<alpha");
         #endif
         X_t->spins[i][j] = current_Y_spin;
         X_t->energy += dE;
+        X_t->spin_sum += 2*current_Y_spin;
       }
     }
 }
@@ -107,23 +118,39 @@ void print_model(Ising *X){
 
 int main() {
     srand(time(NULL));
+    unsigned int executions = 1000000;
+    FILE *statistics;
+    
+    //Prepara o modelo
     Ising X;
-    X.J = 3;
-    unsigned long int executions = 1000000;
-    create_spin_lattice(&X,500);
+    X.J = 1;
+    create_spin_lattice(&X,750);
+    X.energy = 0;
+    X.spin_sum = 0;
     calculate_hamiltonian(&X);
+    calculate_spin_sum(&X);
     #ifdef DEBUG
     printf("X\nenergy: %f\n",X.energy);
-    print_model(&X);
+    //print_model(&X);
     #endif
-    int i=0;
-    for(i=0; i<executions; i++){
-      isingStep(&X,0.5);
+    
+    //Executa o simulador
+    statistics = fopen("statistics.txt","w");
+    if(statistics == NULL){
+      printf("Can't open file");
+    }else{
+      for(int i=0; i<executions; i++){
+        isingStep(&X,Temperatura);
+        //Escreve no documento
+        char mensagem[50];
+        sprintf(mensagem, "%d,%.5f,%.3f\n", i, X.energy, X.spin_sum/(N*N));
+        fputs(mensagem, statistics);
+      }    
     }
-    printf("%d",i);
+    fclose(statistics);
     #ifdef DEBUG
     printf("X\nenergy: %f\n",X.energy);
-    print_model(&X);
+    //print_model(&X);
     #endif
     return 0;
 }

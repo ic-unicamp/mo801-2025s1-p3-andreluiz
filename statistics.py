@@ -10,8 +10,6 @@ y_energy_axis = []
 y_spin_axis = []
 c = 0
 for content in statistics_array:
-    print(c)
-    print(content)
     data = content.split(",")
     if len(data) > 1:
         x_axis.append(data[0])
