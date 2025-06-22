@@ -1,43 +1,56 @@
-module Spin(spin_val, left, right, top, bottom, random, final_spin_val);
-
+module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_val);
+	
+	input clk;
 	input spin_val, left, right, top, bottom; 
-	input [11:0]random;
+	input enable;
+	input [31:0]rand32;
 	output final_spin_val;
 	
 	wire dE_negative, valid_alpha;
 	wire [4:0] dE;
-	wire [11:0] probability;
-	
+	wire [11:0] rand12; 
+	reg [11:0] random;
+	integer counter;
+
 	Spin_calculate_dE calculate_dE(
 	.spin_val(spin_val),
 	.left(left),
 	.right(right),
 	.top(top),
 	.bottom(bottom),
-	.dE(dE)
-	);
-
-	Spin_less_or_equal_operator dE_negative_or_positive(
-	.value1(dE),
-	.value2(0),
+	.enable(enable),
+	.dE(dE),
 	.result(dE_negative)
+	);
+	
+	Sfrl_12 rand12_mod(
+	.clk(clk),
+	.seed_val(counter[7:0]),
+	.random(rand12)
 	);
 		
 	Spin_lut lut(
 	.dE(dE),
-	.probability(probability)
-	);
-	
-	Spin_less_or_equal_operator alpha_verification(
-	.value1(random),
-	.value2(probability)
+	.enable(enable),
+	.random(random),
+	.result(valid_alpha)
 	);
 	
 	Spin_flip flip(
 	.spin_val(spin_val),
 	.dE_negative(dE_negative),
 	.valid_alpha(valid_alpha),
+	.enable(enable),
 	.result(final_spin_val)
 	);
+	
+	initial begin
+		counter = 0;
+	end
+	
+	always @(clk) begin
+		counter++;
+		random = rand32[31:20] ^ rand12;
+	end;
 
 endmodule
