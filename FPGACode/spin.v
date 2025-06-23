@@ -10,7 +10,7 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	wire [4:0] dE;
 	wire [11:0] rand12; 
 	reg [11:0] random;
-	integer counter;
+	integer counter, rand_aux;
 
 	Spin_calculate_dE calculate_dE(
 	.spin_val(spin_val),
@@ -25,7 +25,7 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	
 	Sfrl_12 rand12_mod(
 	.clk(clk),
-	.seed_val(counter[7:0]),
+	.seed_val(rand_aux),
 	.random(rand12)
 	);
 		
@@ -49,6 +49,7 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	end
 	
 	always @(clk) begin
+		rand_aux = counter[7:0] + left + right + top + bottom;
 		counter++;
 		random = rand32[31:20] ^ rand12;
 	end;
