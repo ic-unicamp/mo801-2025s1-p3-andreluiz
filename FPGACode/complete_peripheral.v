@@ -11,11 +11,11 @@ wire [31:0] rand32;
 integer k,l;
 reg [31:0] mem[31:0];
 
-Sfrl_32 rand32_mod(
+/*Sfrl_32 rand32_mod(
 	.clk(clk),
 	.seed_val(counter[7:0]),
 	.random(rand32)
-);
+);*/
 
 initial begin
 	enable_white = 1;

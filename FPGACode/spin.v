@@ -6,6 +6,8 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	input [31:0]rand32;
 	output final_spin_val;
 	
+	//reg[31:0] seed;
+	
 	wire dE_negative, valid_alpha;
 	wire [4:0] dE;
 	wire [11:0] rand12; 
@@ -23,11 +25,11 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	.result(dE_negative)
 	);
 	
-	Sfrl_12 rand12_mod(
+	/*Sfrl_12 rand12_mod(
 	.clk(clk),
-	.seed_val(rand_aux),
+	.seed_val(rand_aux[7:0]),
 	.random(rand12)
-	);
+	);*/
 		
 	Spin_lut lut(
 	.dE(dE),
@@ -49,9 +51,9 @@ module Spin(clk, spin_val, left, right, top, bottom, rand32, enable, final_spin_
 	end
 	
 	always @(clk) begin
-		rand_aux = counter[7:0] + left + right + top + bottom;
+		//rand_aux = counter[7:0] + left + right + top + bottom;
 		counter++;
-		random = rand32[31:20] ^ rand12;
+		random = $random%12'b111111111111;//rand32[31:20] ^ rand12;
 	end;
 
 endmodule
