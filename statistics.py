@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-statistics_file = open("statistics.txt")
+statistics_file = open("saida.txt")
 statistics_content = statistics_file.read()
 statistics_array = statistics_content.split("\n")
 
@@ -11,7 +11,7 @@ y_spin_axis = []
 c = 0
 for content in statistics_array:
     data = content.split(",")
-    if len(data) > 1:
+    if len(data) > 1 and len(data)<4:
         x_axis.append(data[0])
         y_energy_axis.append(data[1])
         y_spin_axis.append(data[2])
