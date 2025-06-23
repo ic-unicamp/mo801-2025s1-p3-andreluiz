@@ -3,23 +3,34 @@ module teste();
 reg clk, reset;
 reg enable_white, enable_grey;
 
-wire lattice [7:0][7:0];
+reg lattice [7:0][7:0];
 wire final_lattice [7:0][7:0];
 
 integer counter;
 wire [31:0] rand32;
-
-initial begin
-
-  $display("*** Starting simulation. ***");
-  counter = 0;
-end
+integer k,l;
+reg [7:0] mem[7:0];
 
 Sfrl_32 rand32_mod(
 	.clk(clk),
 	.seed_val(counter[7:0]),
 	.random(rand32)
 );
+
+initial begin
+	enable_white = 1;
+	enable_grey = 0;
+	counter=0;
+	$display("Ising model sim");
+	$readmemb("memory.mem", mem, 0,7);
+	
+	for (k = 0; k < 8; k = k + 1)begin
+	for (l = 0; l < 8; l = l + 1) begin
+		lattice[k][l] = mem[k][l];
+	end
+	$write("\n");
+	end
+end
 
 genvar i,j;
 generate
@@ -63,6 +74,14 @@ always #1 clk = (clk===1'b0);
 
 always @(posedge clk or posedge reset) begin
     if(counter<20) begin
+    	    if(counter%2==0 && counter > 0) begin
+		    for (k = 0; k < 8; k = k + 1) begin
+		    for (l = 0; l < 8; l = l + 1) begin  
+			lattice[k][l] = final_lattice[k][l];
+		    end
+		    end 	    
+    	    end
+    	    
 	    if (reset) begin
 		enable_white = 1;
 		enable_grey = 0;
@@ -70,8 +89,17 @@ always @(posedge clk or posedge reset) begin
 		enable_white = ~enable_white;
 		enable_grey  = ~enable_grey;
 	    end 
-	    $display("%d",counter);
 	    counter++;
+	    
+    	    	
+    		
+    /*for (k = 0; k < 8; k = k + 1) begin
+    for (l = 0; l < 8; l = l + 1) begin  
+	$write("%d ",final_lattice[k][l]);
+    end
+        $write("\n");
+    end*/
+    $write("\n");
     end else begin
     	$finish;
     end
