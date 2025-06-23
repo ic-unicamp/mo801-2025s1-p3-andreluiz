@@ -41,7 +41,7 @@ module Spin_calculate_dE(spin_val,left,right,top,bottom,enable,dE,result);
 		  	    5'b11111: dE =  4;	    
 			    default: dE = 0;
 		    endcase
- 		    result = ($signed(dE) <= 0)?1:0;		    
+		    result = ($signed(dE) <= 0)?1:0;
 	    end
 	end
 

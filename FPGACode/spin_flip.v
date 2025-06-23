@@ -5,7 +5,7 @@ module Spin_flip(spin_val, dE_negative, valid_alpha, enable, result);
 	output reg result;
 	
 	always @(*) begin
-	        $display("FLIP");
+
 		if(enable)
 			result = spin_val ^ (dE_negative | valid_alpha);
 	end
